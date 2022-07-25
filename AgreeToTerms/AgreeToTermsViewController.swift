@@ -80,6 +80,7 @@ class AgreeToTermsViewController: UIViewController {
         pageControl.numberOfPages = policyModel.numberOfPages
         pageControl.pageIndicatorTintColor = .systemGray
         pageControl.currentPageIndicatorTintColor = .systemBlue
+        pageControl.isUserInteractionEnabled = false
         view.addSubview(pageControl)
         
         pageControl.heightAnchor.constraint(equalToConstant: 20).isActive = true
