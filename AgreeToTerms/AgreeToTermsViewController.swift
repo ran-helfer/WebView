@@ -18,7 +18,30 @@ import Combine
 
 class AgreeToTermsViewController: UIViewController {
     
+    private let approveButton: UIButton = {
+        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 150, height: 50)))
+        btn.addTarget(self, action: #selector(approveButtonTouch), for: .touchUpInside)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.layer.cornerRadius = 2
+        btn.setTitle("Approve", for: .normal)
+        btn.backgroundColor = .systemBlue
+        btn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        return btn
+    }()
+    
+    private let declineButton: UIButton = {
+        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 150, height: 50)))
+        btn.addTarget(self, action: #selector(dismissController), for: .touchUpInside)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.layer.cornerRadius = 2
+        btn.setTitle("Decline", for: .normal)
+        btn.backgroundColor = .systemBlue
+        btn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        return btn
+    }()
+    
     private var webView: WKWebView!
+    private var buttonsStackView: UIStackView!
     private var finishedLoad: Bool = false
     
     private var subscriptions = Set<AnyCancellable>()
@@ -28,16 +51,50 @@ class AgreeToTermsViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(dismissController))
-                
-        setupWebView()
+        
+        // https://stackoverflow.com/a/69135729/4853489
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        
+        self.view.backgroundColor = .white
         
         setupButtons()
+        
+        setupWebView()
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
     }
     
     private func setupButtons() {
+        let stack =  UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.distribution = .fillEqually
+        stack.backgroundColor = .gray
+        stack.spacing = 20
         
+        stack.addArrangedSubview(declineButton)
+        stack.addArrangedSubview(approveButton)
+        
+        view.addSubview(stack)
+        stack.heightAnchor.constraint(equalToConstant: 80).isActive = true
+        stack.widthAnchor.constraint(equalToConstant: self.view.frame.width).isActive = true
+        stack.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        stack.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+
+        self.buttonsStackView = stack
     }
 
+    @objc func approveButtonTouch() {
+        // update model
+    }
+    
     private func setupWebView() {
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: view.frame, configuration: webConfiguration)
@@ -48,6 +105,7 @@ class AgreeToTermsViewController: UIViewController {
         }
         
         let requestObj = URLRequest(url: url)
+        webView.translatesAutoresizingMaskIntoConstraints = false
         webView.load(requestObj)
         webView.navigationDelegate = self
         webView.scrollView.delegate = self
@@ -56,7 +114,7 @@ class AgreeToTermsViewController: UIViewController {
         webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        webView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor).isActive = true
     }
     
     @objc func dismissController() {
