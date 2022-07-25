@@ -14,25 +14,35 @@
  */
 
 import WebKit
+import Combine
 
 class AgreeToTermsViewController: UIViewController {
     
-    var webView: WKWebView!
-    var finishedLoad: Bool = false
-    var canMoveToNextPage: Bool = false
+    private var webView: WKWebView!
+    private var finishedLoad: Bool = false
     
-    let eulaURLString = "https://www.viz.ai/eula"
-    let privacyURLString = "https://www.viz.ai/privacy-policy"
-    
+    private var subscriptions = Set<AnyCancellable>()
+    private var policyModel = PolicySignModel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(dismissController))
+                
+        setupWebView()
         
+        setupButtons()
+    }
+    
+    private func setupButtons() {
+        
+    }
+
+    private func setupWebView() {
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: view.frame, configuration: webConfiguration)
         guard let webView = webView,
-              let url = URL (string: eulaURLString)
+              let url = URL (string: policyModel.currentURL())
         else {
             return
         }
@@ -48,7 +58,7 @@ class AgreeToTermsViewController: UIViewController {
         webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
     }
-        
+    
     @objc func dismissController() {
         self.navigationController?.dismiss(animated: true) {
             // TODO: Tracking
@@ -64,32 +74,18 @@ extension AgreeToTermsViewController: WKNavigationDelegate {
     
     /* Allow to load accept policy only URL */
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
-        if let url = navigationAction.request.url?.absoluteString {
-            if url == eulaURLString || url == privacyURLString {
-                decisionHandler(.allow)
-            } else {
-                decisionHandler(.cancel)
-            }
-        }
+        let decision: WKNavigationActionPolicy = policyModel.shouldAllowPage(absoluteString: navigationAction.request.url?.absoluteString ?? "")
+        decisionHandler(decision)
     }
     
 }
 
 extension AgreeToTermsViewController: UIScrollViewDelegate {
-    
-    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard finishedLoad else {
             return
         }
         
-        let maxY = scrollView.contentSize.height - scrollView.bounds.height
-        let yPosition = scrollView.contentOffset.y
-        let delta = maxY-yPosition
-        
-        if delta < 0 {
-            canMoveToNextPage = true
-            // TODO: Tracking?
-        }
+        policyModel.updateModelWithScroll(contentSizeHeight: scrollView.contentSize.height, scrollViewHeightBound: scrollView.bounds.height, contentOffsetY: scrollView.contentOffset.y)
     }
 }

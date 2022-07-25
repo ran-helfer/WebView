@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		80A8377F288E8B6600A9DC22 /* PolicySignModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80A8377E288E8B6600A9DC22 /* PolicySignModel.swift */; };
 		80DD3A2F288D15C700435C89 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DD3A2E288D15C700435C89 /* AppDelegate.swift */; };
 		80DD3A31288D15C700435C89 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DD3A30288D15C700435C89 /* SceneDelegate.swift */; };
 		80DD3A33288D15C700435C89 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80DD3A32288D15C700435C89 /* ViewController.swift */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		80A8377E288E8B6600A9DC22 /* PolicySignModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolicySignModel.swift; sourceTree = "<group>"; };
 		80DD3A2B288D15C700435C89 /* AgreeToTerms.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgreeToTerms.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		80DD3A2E288D15C700435C89 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		80DD3A30288D15C700435C89 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 				80DD3A30288D15C700435C89 /* SceneDelegate.swift */,
 				80DD3A32288D15C700435C89 /* ViewController.swift */,
 				80DD3A42288D1A4200435C89 /* AgreeToTermsViewController.swift */,
+				80A8377E288E8B6600A9DC22 /* PolicySignModel.swift */,
 				80DD3A34288D15C700435C89 /* Main.storyboard */,
 				80DD3A37288D15CA00435C89 /* Assets.xcassets */,
 				80DD3A39288D15CA00435C89 /* LaunchScreen.storyboard */,
@@ -142,6 +145,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				80DD3A43288D1A4200435C89 /* AgreeToTermsViewController.swift in Sources */,
+				80A8377F288E8B6600A9DC22 /* PolicySignModel.swift in Sources */,
 				80DD3A33288D15C700435C89 /* ViewController.swift in Sources */,
 				80DD3A2F288D15C700435C89 /* AppDelegate.swift in Sources */,
 				80DD3A31288D15C700435C89 /* SceneDelegate.swift in Sources */,
