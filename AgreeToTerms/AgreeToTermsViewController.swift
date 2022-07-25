@@ -20,9 +20,9 @@ import Combine
 class AgreeToTermsViewController: UIViewController {
         
     private var webView: WKWebView!
-    private var buttonsStackView: UIStackView!
     private var approveButton: UIButton!
     private var declineButton: UIButton!
+    private var pageControl: UIPageControl!
 
     private var finishedLoad: Bool = false
     
@@ -42,33 +42,12 @@ class AgreeToTermsViewController: UIViewController {
         
         self.view.backgroundColor = .black
         
-        setupButtons()
-        
-        setupWebView()
-        
+        setupView()
+                
         setupSubscriptions()
     }
-    
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
-    }
-    
-    private func buttonWithText(text: String) -> UIButton {
-        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 167, height: 50)))
-        btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.layer.cornerRadius = 8
-        btn.setTitle(text, for: .normal)
-        btn.backgroundColor = .black
-        btn.setTitleColor(.white, for: .normal)
-        btn.setTitleColor(.gray, for: .disabled)
-        btn.titleLabel?.font = UIFont(name: "SF Pro", size: 17.0)
-        btn.titleLabel?.numberOfLines = 0
-        btn.titleLabel?.textAlignment = .center
-        btn.isEnabled = false
-        return btn
-    }
-    
-    private func setupButtons() {
+        
+    private func setupView() {
         let stack =  UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
 
@@ -92,16 +71,24 @@ class AgreeToTermsViewController: UIViewController {
         stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16).isActive = true
         stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16).isActive = true
         stack.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        self.buttonsStackView = stack
+        
         self.approveButton = approveButton
         self.declineButton = declineButton
-    }
+        
+        let pageControl = UIPageControl(frame: .zero)
+        pageControl.translatesAutoresizingMaskIntoConstraints = false
+        pageControl.numberOfPages = policyModel.numberOfPages
+        pageControl.pageIndicatorTintColor = .systemGray
+        pageControl.currentPageIndicatorTintColor = .systemBlue
+        view.addSubview(pageControl)
+        
+        pageControl.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        pageControl.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        pageControl.bottomAnchor.constraint(equalTo: stack.topAnchor).isActive = true
+        pageControl.centerXAnchor.constraint(equalTo: stack.centerXAnchor).isActive = true
 
-    @objc func approveButtonTouch() {
-        policyModel.approveButtonPressed()
-    }
-    
-    private func setupWebView() {
+        self.pageControl = pageControl
+        
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: view.frame, configuration: webConfiguration)
         guard let webView = webView else {
@@ -116,13 +103,32 @@ class AgreeToTermsViewController: UIViewController {
         webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        webView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor).isActive = true
+        webView.bottomAnchor.constraint(equalTo: pageControl.topAnchor).isActive = true
+    }
+
+    private func buttonWithText(text: String) -> UIButton {
+        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 167, height: 50)))
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.layer.cornerRadius = 8
+        btn.setTitle(text, for: .normal)
+        btn.backgroundColor = .black
+        btn.setTitleColor(.white, for: .normal)
+        btn.setTitleColor(.gray, for: .disabled)
+        btn.titleLabel?.font = UIFont(name: "SF Pro", size: 17.0)
+        btn.titleLabel?.numberOfLines = 0
+        btn.titleLabel?.textAlignment = .center
+        btn.isEnabled = true
+        return btn
+    }
+    
+    @objc func approveButtonTouch() {
+        policyModel.approveButtonPressed()
     }
     
     func setupSubscriptions() {
         policyModel.canMoveToNextPage.sink { [weak self] val in
             guard let self = self else {return}
-            self.declineButton.isEnabled = val
+            //self.declineButton.isEnabled = val
             self.approveButton.isEnabled = val
         }.store(in: &subscriptions)
         
@@ -134,6 +140,9 @@ class AgreeToTermsViewController: UIViewController {
             self.finishedLoad = false
             let requestObj = URLRequest(url: url)
             self.webView.load(requestObj)
+            
+            self.pageControl.currentPage = val
+
         }.store(in: &subscriptions)
         
         policyModel.policySignEnded.sink { [weak self] val in

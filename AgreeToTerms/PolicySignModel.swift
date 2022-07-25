@@ -20,6 +20,10 @@ final class PolicySignModel {
         return urlForPage[currentPage.value]
     }
     
+    var numberOfPages: Int  {
+        urlForPage.count
+    }
+    
     func approveButtonPressed() {
         if currentPage.value == urlForPage.count - 1 {
             policySignCompleted()
