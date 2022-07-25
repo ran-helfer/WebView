@@ -10,6 +10,10 @@
     Swift UI ?
  */
 
+/**
+    Agree to terms view controller is attached to PolicySignModel using combine framework. Only when user is scrolling to the end he is allowed to go to next page. 
+ */
+
 import WebKit
 import Combine
 
@@ -99,7 +103,6 @@ class AgreeToTermsViewController: UIViewController {
         guard let webView = webView else {
             return
         }
-        
         
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.navigationDelegate = self

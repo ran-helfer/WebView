@@ -7,6 +7,11 @@
 
 import WebKit
 
+/*
+    Initial view controller showing a single button "Accept Terms" imitiating:
+        https://www.figma.com/file/SZAfVh4PyvWfGa7A281aan/EULA-page-and-confirmation-(DEV)?node-id=101%3A3514
+ */
+
 class ViewController: UIViewController {
 
     var webView: WKWebView?
