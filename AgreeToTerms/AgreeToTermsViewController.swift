@@ -30,8 +30,6 @@ class AgreeToTermsViewController: UIViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(dismissController))
         
         let webConfiguration = WKWebViewConfiguration()
-        
-        // TODO: Fix this force unwrap
         webView = WKWebView(frame: view.frame, configuration: webConfiguration)
         guard let webView = webView,
               let url = URL (string: eulaURLString)
@@ -39,32 +37,30 @@ class AgreeToTermsViewController: UIViewController {
             return
         }
         
-        
-        view.addSubview(webView)
-        
-        webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        
         let requestObj = URLRequest(url: url)
         webView.load(requestObj)
         webView.navigationDelegate = self
         webView.scrollView.delegate = self
-        webView.setNeedsDisplay()
+        
+        view.addSubview(webView)
+        webView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        webView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
     }
-    
+        
     @objc func dismissController() {
-        self.navigationController?.dismiss(animated: true, completion: nil)
+        self.navigationController?.dismiss(animated: true) {
+            // TODO: Tracking
+        }
     }
 }
 
 extension AgreeToTermsViewController: WKNavigationDelegate {
+    
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("finish to load")
         finishedLoad = true
     }
-    
     
     /* Allow to load accept policy only URL */
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
@@ -93,6 +89,7 @@ extension AgreeToTermsViewController: UIScrollViewDelegate {
         
         if delta < 0 {
             canMoveToNextPage = true
+            // TODO: Tracking?
         }
     }
 }
