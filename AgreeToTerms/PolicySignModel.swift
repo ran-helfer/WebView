@@ -7,16 +7,34 @@
 
 import Foundation
 import WebKit
+import Combine
 
 final class PolicySignModel {
-    private var currentPage = 0
     private let urlForPage = ["https://www.viz.ai/eula",
                               "https://www.viz.ai/privacy-policy"]
-    private var canMoveToNextPage: Bool = false
-
+    var canMoveToNextPage = CurrentValueSubject<Bool, Never>(false)
+    var currentPage = CurrentValueSubject<Int, Never>(0)
+    var policySignEnded = CurrentValueSubject<Bool, Never>(false)
 
     func currentURL() -> String {
-        return urlForPage[currentPage]
+        return urlForPage[currentPage.value]
+    }
+    
+    func approveButtonPressed() {
+        if currentPage.value == urlForPage.count - 1 {
+            policySignCompleted()
+            return
+        }
+        currentPage.value += 1
+        canMoveToNextPage.value = false
+    }
+    
+    private func policySignCompleted() {
+        policySignEnded.value = true
+        
+        // Write to userDefults
+        // Send policy sign completed to backend
+        
     }
     
     func shouldAllowPage(absoluteString: String?) -> WKNavigationActionPolicy {
@@ -36,7 +54,7 @@ final class PolicySignModel {
         let delta = contentSizeHeight - scrollViewHeightBound - contentOffsetY
         
         if delta < 0 {
-            canMoveToNextPage = true
+            canMoveToNextPage.value = true
             // TODO: Tracking?
         }
     }

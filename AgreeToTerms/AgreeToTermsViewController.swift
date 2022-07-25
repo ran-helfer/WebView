@@ -7,9 +7,7 @@
 
 
 /**
-    Combine + Modeling
-    Swift ui
- 
+    Swift UI ?
  */
 
 import WebKit
@@ -19,6 +17,8 @@ class AgreeToTermsViewController: UIViewController {
         
     private var webView: WKWebView!
     private var buttonsStackView: UIStackView!
+    private var approveButton: UIButton!
+    
     private var finishedLoad: Bool = false
     
     private var subscriptions = Set<AnyCancellable>()
@@ -40,6 +40,8 @@ class AgreeToTermsViewController: UIViewController {
         setupButtons()
         
         setupWebView()
+        
+        setupSubscriptions()
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -71,7 +73,7 @@ class AgreeToTermsViewController: UIViewController {
         let declineButton = buttonWithText(text: "Decline")
         declineButton.addTarget(self, action: #selector(dismissController), for: .touchUpInside)
         let approveButton = buttonWithText(text: "Approve")
-        declineButton.addTarget(self, action: #selector(approveButtonTouch), for: .touchUpInside)
+        approveButton.addTarget(self, action: #selector(approveButtonTouch), for: .touchUpInside)
         approveButton.isEnabled = false
         
         stack.addArrangedSubview(declineButton)
@@ -84,24 +86,22 @@ class AgreeToTermsViewController: UIViewController {
         stack.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
 
         self.buttonsStackView = stack
+        self.approveButton = approveButton
     }
 
     @objc func approveButtonTouch() {
-        // update model
+        policyModel.approveButtonPressed()
     }
     
     private func setupWebView() {
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: view.frame, configuration: webConfiguration)
-        guard let webView = webView,
-              let url = URL (string: policyModel.currentURL())
-        else {
+        guard let webView = webView else {
             return
         }
         
-        let requestObj = URLRequest(url: url)
+        
         webView.translatesAutoresizingMaskIntoConstraints = false
-        webView.load(requestObj)
         webView.navigationDelegate = self
         webView.scrollView.delegate = self
         
@@ -110,6 +110,29 @@ class AgreeToTermsViewController: UIViewController {
         webView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         webView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         webView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor).isActive = true
+    }
+    
+    func setupSubscriptions() {
+        policyModel.canMoveToNextPage.sink { [weak self] val in
+            guard let self = self else {return}
+            self.approveButton.isEnabled  = val
+        }.store(in: &subscriptions)
+        
+        policyModel.currentPage.sink { [weak self] val in
+            guard let self = self,
+                  let url = URL (string: self.policyModel.currentURL()) else {
+                return
+            }
+            self.finishedLoad = false
+            let requestObj = URLRequest(url: url)
+            self.webView.load(requestObj)
+        }.store(in: &subscriptions)
+        
+        policyModel.policySignEnded.sink { [weak self] val in
+            if val {
+                self?.dismissController()
+            }
+        }.store(in: &subscriptions)
     }
     
     @objc func dismissController() {
