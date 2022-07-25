@@ -11,7 +11,7 @@
  */
 
 /**
-    Agree to terms view controller is attached to PolicySignModel using combine framework. Only when user is scrolling to the end he is allowed to go to next page. 
+    Agree to terms view controller is attached to PolicySignModel using combine framework. Only when user is scrolling to the end he is allowed to go to next page.
  */
 
 import WebKit
@@ -22,7 +22,8 @@ class AgreeToTermsViewController: UIViewController {
     private var webView: WKWebView!
     private var buttonsStackView: UIStackView!
     private var approveButton: UIButton!
-    
+    private var declineButton: UIButton!
+
     private var finishedLoad: Bool = false
     
     private var subscriptions = Set<AnyCancellable>()
@@ -39,7 +40,7 @@ class AgreeToTermsViewController: UIViewController {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         
-        self.view.backgroundColor = .white
+        self.view.backgroundColor = .black
         
         setupButtons()
         
@@ -53,14 +54,17 @@ class AgreeToTermsViewController: UIViewController {
     }
     
     private func buttonWithText(text: String) -> UIButton {
-        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 150, height: 50)))
+        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 167, height: 50)))
         btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.layer.cornerRadius = 2
+        btn.layer.cornerRadius = 8
         btn.setTitle(text, for: .normal)
-        btn.backgroundColor = .white
-        btn.setTitleColor(.systemBlue, for: .normal)
-        btn.setTitleColor(.systemGray, for: .disabled)
-        btn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        btn.backgroundColor = .black
+        btn.setTitleColor(.white, for: .normal)
+        btn.setTitleColor(.gray, for: .disabled)
+        btn.titleLabel?.font = UIFont(name: "SF Pro", size: 17.0)
+        btn.titleLabel?.numberOfLines = 0
+        btn.titleLabel?.textAlignment = .center
+        btn.isEnabled = false
         return btn
     }
     
@@ -71,26 +75,26 @@ class AgreeToTermsViewController: UIViewController {
         stack.axis = .horizontal
         stack.alignment = .center
         stack.distribution = .fillEqually
-        stack.backgroundColor = .gray
-        stack.spacing = 20
+        stack.backgroundColor = .black
+        stack.spacing = 16
 
         let declineButton = buttonWithText(text: "Decline")
         declineButton.addTarget(self, action: #selector(dismissController), for: .touchUpInside)
         let approveButton = buttonWithText(text: "Approve")
         approveButton.addTarget(self, action: #selector(approveButtonTouch), for: .touchUpInside)
-        approveButton.isEnabled = false
+        approveButton.backgroundColor = .systemBlue
         
         stack.addArrangedSubview(declineButton)
         stack.addArrangedSubview(approveButton)
 
         view.addSubview(stack)
         stack.heightAnchor.constraint(equalToConstant: 80).isActive = true
-        stack.widthAnchor.constraint(equalToConstant: self.view.frame.width).isActive = true
+        stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16).isActive = true
+        stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16).isActive = true
         stack.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        stack.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-
         self.buttonsStackView = stack
         self.approveButton = approveButton
+        self.declineButton = declineButton
     }
 
     @objc func approveButtonTouch() {
@@ -118,7 +122,8 @@ class AgreeToTermsViewController: UIViewController {
     func setupSubscriptions() {
         policyModel.canMoveToNextPage.sink { [weak self] val in
             guard let self = self else {return}
-            self.approveButton.isEnabled  = val
+            self.declineButton.isEnabled = val
+            self.approveButton.isEnabled = val
         }.store(in: &subscriptions)
         
         policyModel.currentPage.sink { [weak self] val in
