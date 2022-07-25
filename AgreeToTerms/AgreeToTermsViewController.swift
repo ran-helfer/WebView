@@ -7,7 +7,6 @@
 
 
 /**
-    Navigation Bar
     Combine + Modeling
     Swift ui
  
@@ -17,29 +16,7 @@ import WebKit
 import Combine
 
 class AgreeToTermsViewController: UIViewController {
-    
-    private let approveButton: UIButton = {
-        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 150, height: 50)))
-        btn.addTarget(self, action: #selector(approveButtonTouch), for: .touchUpInside)
-        btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.layer.cornerRadius = 2
-        btn.setTitle("Approve", for: .normal)
-        btn.backgroundColor = .systemBlue
-        btn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        return btn
-    }()
-    
-    private let declineButton: UIButton = {
-        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 150, height: 50)))
-        btn.addTarget(self, action: #selector(dismissController), for: .touchUpInside)
-        btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.layer.cornerRadius = 2
-        btn.setTitle("Decline", for: .normal)
-        btn.backgroundColor = .systemBlue
-        btn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        return btn
-    }()
-    
+        
     private var webView: WKWebView!
     private var buttonsStackView: UIStackView!
     private var finishedLoad: Bool = false
@@ -69,6 +46,18 @@ class AgreeToTermsViewController: UIViewController {
         return .lightContent
     }
     
+    private func buttonWithText(text: String) -> UIButton {
+        let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 150, height: 50)))
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.layer.cornerRadius = 2
+        btn.setTitle(text, for: .normal)
+        btn.backgroundColor = .white
+        btn.setTitleColor(.systemBlue, for: .normal)
+        btn.setTitleColor(.systemGray, for: .disabled)
+        btn.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        return btn
+    }
+    
     private func setupButtons() {
         let stack =  UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -78,10 +67,16 @@ class AgreeToTermsViewController: UIViewController {
         stack.distribution = .fillEqually
         stack.backgroundColor = .gray
         stack.spacing = 20
+
+        let declineButton = buttonWithText(text: "Decline")
+        declineButton.addTarget(self, action: #selector(dismissController), for: .touchUpInside)
+        let approveButton = buttonWithText(text: "Approve")
+        declineButton.addTarget(self, action: #selector(approveButtonTouch), for: .touchUpInside)
+        approveButton.isEnabled = false
         
         stack.addArrangedSubview(declineButton)
         stack.addArrangedSubview(approveButton)
-        
+
         view.addSubview(stack)
         stack.heightAnchor.constraint(equalToConstant: 80).isActive = true
         stack.widthAnchor.constraint(equalToConstant: self.view.frame.width).isActive = true
@@ -132,7 +127,7 @@ extension AgreeToTermsViewController: WKNavigationDelegate {
     
     /* Allow to load accept policy only URL */
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
-        let decision: WKNavigationActionPolicy = policyModel.shouldAllowPage(absoluteString: navigationAction.request.url?.absoluteString ?? "")
+        let decision: WKNavigationActionPolicy = policyModel.shouldAllowPage(absoluteString: navigationAction.request.url?.absoluteString)
         decisionHandler(decision)
     }
     

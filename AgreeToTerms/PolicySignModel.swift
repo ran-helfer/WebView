@@ -19,10 +19,15 @@ final class PolicySignModel {
         return urlForPage[currentPage]
     }
     
-    func shouldAllowPage(absoluteString: String) -> WKNavigationActionPolicy {
+    func shouldAllowPage(absoluteString: String?) -> WKNavigationActionPolicy {
+        guard let  absoluteString = absoluteString else {
+            return .cancel
+        }
+        
         if urlForPage.contains(absoluteString) {
             return WKNavigationActionPolicy.allow
         }
+        
         return WKNavigationActionPolicy.cancel
     }
     
