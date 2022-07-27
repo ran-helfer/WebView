@@ -13,16 +13,35 @@
 import WebKit
 import Combine
 
-class AgreeToTermsViewController: UIViewController {
+/*
+ COMMENTS:
+ - renamed to match feature and make it consistent with view model
+ - provided constructor to inject view model from outside
+ - renamed `subscriptions` to `cancellables` which is sort the naming rule
+ - substituted the mutable force-uncast view attributes with non-mutable instantiated objects
+ */
+
+final class PolicyAgreementViewController: UIViewController {
         
-    private var webView: WKWebView!
-    private var buttonsStackView: UIStackView!
-    private var approveButton: UIButton!
+    private let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+    private let buttonsStackView = UIStackView(frame: .zero)
+    private let approveButton = buttonWithText(text: "Approve")
+    private let declineButton = buttonWithText(text: "Decline")
     
     private var finishedLoad: Bool = false
     
-    private var subscriptions = Set<AnyCancellable>()
-    private var policyModel = PolicySignModel()
+    private var cancellables = Set<AnyCancellable>()
+    private let viewModel: PolicyAgreementViewModelProtocol
+
+    init(viewModel: PolicyAgreementViewModelProtocol) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,7 +67,7 @@ class AgreeToTermsViewController: UIViewController {
         return .lightContent
     }
     
-    private func buttonWithText(text: String) -> UIButton {
+    static private func buttonWithText(text: String) -> UIButton {
         let btn = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: 150, height: 50)))
         btn.translatesAutoresizingMaskIntoConstraints = false
         btn.layer.cornerRadius = 2
@@ -61,7 +80,7 @@ class AgreeToTermsViewController: UIViewController {
     }
     
     private func setupButtons() {
-        let stack =  UIStackView()
+        let stack = self.buttonsStackView
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         stack.axis = .horizontal
@@ -70,9 +89,7 @@ class AgreeToTermsViewController: UIViewController {
         stack.backgroundColor = .gray
         stack.spacing = 20
 
-        let declineButton = buttonWithText(text: "Decline")
         declineButton.addTarget(self, action: #selector(dismissController), for: .touchUpInside)
-        let approveButton = buttonWithText(text: "Approve")
         approveButton.addTarget(self, action: #selector(approveButtonTouch), for: .touchUpInside)
         approveButton.isEnabled = false
         
@@ -84,23 +101,13 @@ class AgreeToTermsViewController: UIViewController {
         stack.widthAnchor.constraint(equalToConstant: self.view.frame.width).isActive = true
         stack.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         stack.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-
-        self.buttonsStackView = stack
-        self.approveButton = approveButton
     }
 
     @objc func approveButtonTouch() {
-        policyModel.approveButtonPressed()
+        viewModel.approveButtonPressed()
     }
     
     private func setupWebView() {
-        let webConfiguration = WKWebViewConfiguration()
-        webView = WKWebView(frame: view.frame, configuration: webConfiguration)
-        guard let webView = webView else {
-            return
-        }
-        
-        
         webView.translatesAutoresizingMaskIntoConstraints = false
         webView.navigationDelegate = self
         webView.scrollView.delegate = self
@@ -113,26 +120,26 @@ class AgreeToTermsViewController: UIViewController {
     }
     
     func setupSubscriptions() {
-        policyModel.canMoveToNextPage.sink { [weak self] val in
+        viewModel.canMoveToNextPage.sink { [weak self] val in
             guard let self = self else {return}
             self.approveButton.isEnabled  = val
-        }.store(in: &subscriptions)
+        }.store(in: &cancellables)
         
-        policyModel.currentPage.sink { [weak self] val in
+        viewModel.currentPage.sink { [weak self] val in
             guard let self = self,
-                  let url = URL (string: self.policyModel.currentURL()) else {
+                  let url = URL (string: self.viewModel.currentURL()) else {
                 return
             }
             self.finishedLoad = false
             let requestObj = URLRequest(url: url)
             self.webView.load(requestObj)
-        }.store(in: &subscriptions)
+        }.store(in: &cancellables)
         
-        policyModel.policySignEnded.sink { [weak self] val in
+        viewModel.policySignEnded.sink { [weak self] val in
             if val {
                 self?.dismissController()
             }
-        }.store(in: &subscriptions)
+        }.store(in: &cancellables)
     }
     
     @objc func dismissController() {
@@ -142,7 +149,7 @@ class AgreeToTermsViewController: UIViewController {
     }
 }
 
-extension AgreeToTermsViewController: WKNavigationDelegate {
+extension PolicyAgreementViewController: WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         finishedLoad = true
@@ -150,18 +157,18 @@ extension AgreeToTermsViewController: WKNavigationDelegate {
     
     /* Allow to load accept policy only URL */
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: (WKNavigationActionPolicy) -> Void) {
-        let decision: WKNavigationActionPolicy = policyModel.shouldAllowPage(absoluteString: navigationAction.request.url?.absoluteString)
-        decisionHandler(decision)
+        let allowed = viewModel.shouldAllowPage(absoluteString: navigationAction.request.url?.absoluteString)
+        decisionHandler(allowed ? .allow : .cancel)
     }
     
 }
 
-extension AgreeToTermsViewController: UIScrollViewDelegate {
+extension PolicyAgreementViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard finishedLoad else {
             return
         }
         
-        policyModel.updateModelWithScroll(contentSizeHeight: scrollView.contentSize.height, scrollViewHeightBound: scrollView.bounds.height, contentOffsetY: scrollView.contentOffset.y)
+        viewModel.updateModelWithScroll(contentSizeHeight: scrollView.contentSize.height, scrollViewHeightBound: scrollView.bounds.height, contentOffsetY: scrollView.contentOffset.y)
     }
 }

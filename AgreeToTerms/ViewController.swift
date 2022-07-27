@@ -12,7 +12,8 @@ class ViewController: UIViewController {
     var webView: WKWebView?
     
     @IBAction func acceptTermsClicked(_ sender: Any) {
-        let controller = AgreeToTermsViewController()
+        let viewModel = PolicyAgreementViewModel()
+        let controller = PolicyAgreementViewController(viewModel: viewModel)
         let navController = UINavigationController(rootViewController: controller)
         navController.modalPresentationStyle = .fullScreen
         navigationController?.present(navController, animated: true)
