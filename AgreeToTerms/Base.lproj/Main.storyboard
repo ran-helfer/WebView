@@ -18,8 +18,11 @@
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nau-fs-jqs">
                                 <rect key="frame" x="150.5" y="432.5" width="113" height="31"/>
+                                <color key="backgroundColor" red="0.078431372550000003" green="0.28627450980000002" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Accept Terms"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Accept Terms" cornerStyle="medium">
+                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </buttonConfiguration>
                                 <connections>
                                     <action selector="acceptTermsClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="kFC-pM-Mo3"/>
                                 </connections>
